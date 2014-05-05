@@ -7,7 +7,6 @@ var cons = require('consolidate')
 
 var app = express();
 
-
 app.engine('dust', cons.dust);
 cons.dust.helpers = require('dustjs-helpers');
 

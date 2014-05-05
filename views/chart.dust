@@ -128,11 +128,10 @@ function type(d) {
 }
 
 </script>
-<!-- <script>
+<script>
 var request = window.superagent;
 request.get('http://weather.yahooapis.com/forecastrss?w=615702&u=c', function(res){
 console.log(res);
 });
 </script>
- -->
  {/charts}
