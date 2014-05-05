@@ -1,9 +1,9 @@
 {
-  "name": "application-name",
+  "name": "test-infratab",
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "supervisor -w views,routes,public,app.js -e html,js,css app.js"
+    "start": "node app.js"
   },
 "dependencies": 
 {
