@@ -1,0 +1,13 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    {+metadata/}
+    {+links/}
+    {+libscripts/}
+    <title>{+title/}</title>
+</head>
+<body>
+{+charts/}
+</body>
+</html>

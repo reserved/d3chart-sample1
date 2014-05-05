@@ -1,32 +1,28 @@
-<!DOCTYPE html>
+{>base/}
+
+{<metadata}
 <meta charset="utf-8">
-<style>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="description" content="{description}">
+<meta name="keywords" content="{keywords}">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+{/metadata}
 
-svg {
-  font: 10px sans-serif;
-}
+{<title}
+D3 Charts | {title}
+{/title}
 
-.area {
-  fill: steelblue;
-  clip-path: url(#clip);
-}
+{<links}
+<link rel="stylesheet" href="../css/initial.css" media="screen,mobile"/>
+<link rel="stylesheet" href="../css/custom.css" media="screen,mobile"/>
+{/links}
 
-.axis path,
-.axis line {
-  fill: none;
-  stroke: #000;
-  shape-rendering: crispEdges;
-}
+{<libscripts}
+<script src="../js/superagent.js"></script>
+<script src="../js/d3.v3.min.js"></script>
+{/libscripts}
 
-.brush .extent {
-  stroke: #fff;
-  fill-opacity: .125;
-  shape-rendering: crispEdges;
-}
-
-</style>
-<body>
-<script src="http://d3js.org/d3.v3.min.js"></script>
+{<charts}
 <script>
 
 var margin = {top: 10, right: 10, bottom: 100, left: 40},
@@ -80,7 +76,8 @@ var context = svg.append("g")
     .attr("class", "context")
     .attr("transform", "translate(" + margin2.left + "," + margin2.top + ")");
 
-d3.csv("sp500.csv", type, function(error, data) {
+d3.csv("../data/sp500.csv", type, function(error, data) {
+  console.log(error);
   x.domain(d3.extent(data.map(function(d) { return d.date; })));
   y.domain([0, d3.max(data.map(function(d) { return d.price; }))]);
   x2.domain(x.domain());
@@ -122,7 +119,7 @@ function brushed() {
   x.domain(brush.empty() ? x2.domain() : brush.extent());
   focus.select(".area").attr("d", area);
   focus.select(".x.axis").call(xAxis);
-
+}
 
 function type(d) {
   d.date = parseDate(d.date);
@@ -131,11 +128,11 @@ function type(d) {
 }
 
 </script>
-<script src="js/superagent.js">
+<!-- <script>
 var request = window.superagent;
-
-request.get('http://api.wunderground.com/api/11822ef41db79306/conditions/q/CA/San_Francisco.json',function(res){
-  console.log(res);
-})
-
+request.get('http://weather.yahooapis.com/forecastrss?w=615702&u=c', function(res){
+console.log(res);
+});
 </script>
+ -->
+ {/charts}

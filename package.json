@@ -1,0 +1,30 @@
+{
+  "name": "application-name",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "supervisor -w views,routes,public,app.js -e html,js,css app.js"
+  },
+"dependencies": 
+{
+"express": "3.3.5",
+"express-uglify": "*",
+"consolidate": "*",
+"dustjs-linkedin": "*",
+"dustjs-helpers": "*",
+"winston": "*",
+"stylus": "~0.42.3",
+"typographic": "0.0.4",
+"jeet": "~5.1.5",
+"rupture": "0.0.3",
+"nib": "~1.0.2",
+"axis-css": "~0.1.8",
+"autoprefixer-stylus": "0.0.4",
+"node-dirutils": "0.0.1",
+"lazy.js": "~0.3.2"
+},
+"devDependencies": 
+{
+"connect-livereload": "~0.3.2"
+}
+}
