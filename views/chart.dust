@@ -130,7 +130,7 @@ function type(d) {
 </script>
 <script>
 var request = window.superagent;
-request.get('http://weather.yahooapis.com/forecastrss?w=615702&u=c', function(res){
+request.get('http://api.wunderground.com/api/11822ef41db79306/conditions/q/CA/San_Francisco.json', function(res){
 console.log(res);
 });
 </script>
