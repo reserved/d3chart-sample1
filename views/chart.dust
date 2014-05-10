@@ -183,7 +183,7 @@ D3 Charts | {title}
 		.on("mouseover", function(o,p) {
 			var title = document.querySelector('.title');
 			title.style.visibility = "visible";
-			title.innerHTML = (d3.select(this)[0][0].__data__.temp[currentUnit] + "<br/>" + d3.select(this)[0][0].__data__.time );
+			title.innerHTML = (d3.select(this)[0][0].__data__.temp[currentUnit] + "&#176; "+ (currentUnit == 'metric' ? 'C' : 'F') +"<br/>" + d3.select(this)[0][0].__data__.time );
 			title.style.position = "absolute";
 			title.style.left = d3.event.x + 20 + "px";
 			title.style.top = d3.event.y + 30 * -1 + "px";
