@@ -14,124 +14,234 @@ D3 Charts | {title}
 
 {<links}
 <link rel="stylesheet" href="../css/initial.css" media="screen,mobile"/>
+<link rel="stylesheet" href="../css/chart.css" media="screen,mobile"/>
 <link rel="stylesheet" href="../css/custom.css" media="screen,mobile"/>
+<link rel="stylesheet" href="../css/humanejs-original.css" media="screen,mobile"/>
 {/links}
 
 {<libscripts}
+<script src="../js/gator.min.js"></script>
+<script src="../js/humane.min.js"></script>
 <script src="../js/superagent.js"></script>
 <script src="../js/d3.v3.min.js"></script>
+<script src="../js/bundle.js"></script>
 {/libscripts}
 
 {<charts}
+<div class="title"></div>
+<div id="loading"></div>
+<div id="rangeContainer"></div>
+<div id="tempContainer"></div>
+<div class="option-temp">
+	<input type="radio" name="tempType" id="english" value="English"/>
+	<label for="english">English</label>
+	<input type="radio" name="tempType" id="metric" value="Metric" checked/>
+	<label for="metric">Metric</label>
+</div>
+
 <script>
+	var lazy = require('lazy.js');
+	var moment = require('moment');
 
-var margin = {top: 10, right: 10, bottom: 100, left: 40},
-    margin2 = {top: 430, right: 10, bottom: 20, left: 40},
-    width = 960 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom,
-    height2 = 500 - margin2.top - margin2.bottom;
+	var tempContainer = document.querySelector('#tempContainer');
+	var rangeContainer = document.querySelector('#rangeContainer');
 
-var parseDate = d3.time.format("%b %Y").parse;
+	var currentUnit = "metric";
 
-var x = d3.time.scale().range([0, width]),
-    x2 = d3.time.scale().range([0, width]),
-    y = d3.scale.linear().range([height, 0]),
-    y2 = d3.scale.linear().range([height2, 0]);
+	Gator(document).on('click','label',function(){
+		currentUnit = this.innerHTML.toLowerCase();
+		removeChart();
+		drawChart();
+	});
 
-var xAxis = d3.svg.axis().scale(x).orient("bottom"),
-    xAxis2 = d3.svg.axis().scale(x2).orient("bottom"),
-    yAxis = d3.svg.axis().scale(y).orient("left");
+	function removeChart(){
+		stempContainer.remove();
+		srangeContainer.remove();
+	};
 
-var brush = d3.svg.brush()
-    .x(x2)
-    .on("brush", brushed);
+	function setStage(){
+		document.querySelector('body').style.backgroundColor = "#1c3b54";
+		tempContainer.style.width = Math.ceil(window.innerWidth * 0.5).toString() + "px";
+		tempContainer.style.height = Math.ceil(window.innerHeight * 0.6).toString() + "px";
+		tempContainer.style.backgroundColor = "rgba(255,255,255,0.7)";
+		tempContainer.style.position = "absolute";
+		tempContainer.style.left = "5%";
+		tempContainer.style.top = "50px";
+		rangeContainer.style.width = tempContainer.style.width;
+		rangeContainer.style.height = Math.ceil(window.innerHeight * 0.1).toString() + "px";
+		rangeContainer.style.backgroundColor = "#1c3b54";
+		rangeContainer.style.position = "absolute";
+		rangeContainer.style.left = "5%";
+		rangeContainer.style.top = tempContainer.clientHeight + 100 + "px";
+	};
 
-var area = d3.svg.area()
-    .interpolate("monotone")
-    .x(function(d) { return x(d.date); })
-    .y0(height)
-    .y1(function(d) { return y(d.price); });
+	window.onload = function(){ setStage(); };
+	window.onresize = function(){ removeChart();  setStage(); drawChart();};
 
-var area2 = d3.svg.area()
-    .interpolate("monotone")
-    .x(function(d) { return x2(d.date); })
-    .y0(height2)
-    .y1(function(d) { return y2(d.price); });
+	var chartContainerSize = {};
+	chartContainerSize.width = tempContainer.innerWidth;
+	chartContainerSize.height = Math.ceil(chartContainerSize.width * 0.6);
 
-var svg = d3.select("body").append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom);
+	var request = window.superagent;
+	var dataArray = [];
 
-svg.append("defs").append("clipPath")
-    .attr("id", "clip")
-  .append("rect")
-    .attr("width", width)
-    .attr("height", height);
+	humane.clickToClose = true;
 
-var focus = svg.append("g")
-    .attr("class", "focus")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+	var notify = humane.create({clickToClose: true, baseCls: 'humane-original'});
+	notify.log('loading...');
 
-var context = svg.append("g")
-    .attr("class", "context")
-    .attr("transform", "translate(" + margin2.left + "," + margin2.top + ")");
+	request.get('/savedfeed',function(err,res){
+		if (err) {
+			console.log(err);
+			notify.remove(function(){});
+			notify.log('Error loading feed...');
+		}
+		else {
+			try {
+				var parsedJSON = JSON.parse(res.text);
+				for(var _i = 0; _i < 240; _i++) {
+					var tempObject = {};
+					var fetchObject = parsedJSON.socket.parser.incoming.body.hourly_forecast[_i];
+					tempObject.epoch = fetchObject.FCTTIME.epoch;
+					tempObject.time = fetchObject.FCTTIME.civil;
+					tempObject.temp = {};
+					tempObject.temp.english = fetchObject.temp.english;
+					tempObject.temp.metric = fetchObject.temp.metric;
+					tempObject.mslp = {};
+					tempObject.mslp.english = fetchObject.mslp.english;
+					tempObject.mslp.metric = fetchObject.mslp.metric;
+					tempObject.wspd = {};
+					tempObject.wspd.english = fetchObject.wspd.english;
+					tempObject.wspd.metric = fetchObject.wspd.metric;
+					dataArray.push(tempObject);
+				}
+			}
+			catch (err) {
+				notify.remove(function(){});
+				notify.log('Error parsing feed... [' + err + ']');
+			}
 
-d3.csv("../data/sp500.csv", type, function(error, data) {
-  console.log(error);
-  x.domain(d3.extent(data.map(function(d) { return d.date; })));
-  y.domain([0, d3.max(data.map(function(d) { return d.price; }))]);
-  x2.domain(x.domain());
-  y2.domain(y.domain());
+			drawChart();
 
-  focus.append("path")
-      .datum(data)
-      .attr("class", "area")
-      .attr("d", area);
+			notify.remove(function(){});
+		}
+	});
 
-  focus.append("g")
-      .attr("class", "x axis")
-      .attr("transform", "translate(0," + height + ")")
-      .call(xAxis);
+	function drawChart(){
 
-  focus.append("g")
-      .attr("class", "y axis")
-      .call(yAxis);
 
-  context.append("path")
-      .datum(data)
-      .attr("class", "area")
-      .attr("d", area2);
+		var width = tempContainer.clientWidth - 40;
 
-  context.append("g")
-      .attr("class", "x axis")
-      .attr("transform", "translate(0," + height2 + ")")
-      .call(xAxis2);
+		var height = tempContainer.clientHeight - 40;
 
-  context.append("g")
-      .attr("class", "x brush")
-      .call(brush)
-    .selectAll("rect")
-      .attr("y", -6)
-      .attr("height", height2 + 7);
-});
+		var width2 = tempContainer.clientWidth;
 
-function brushed() {
-  x.domain(brush.empty() ? x2.domain() : brush.extent());
-  focus.select(".area").attr("d", area);
-  focus.select(".x.axis").call(xAxis);
-}
+		var height2 = rangeContainer.clientHeight;
 
-function type(d) {
-  d.date = parseDate(d.date);
-  d.price = +d.price;
-  return d;
-}
+		stempContainer = d3.select("#tempContainer")
+		.attr("width",width)
+		.attr("height",height)
+		.append("svg");
 
+		srangeContainer = d3.select("#rangeContainer")
+		.attr("width",width2)
+		.attr("height",height2)
+		.append("svg");
+
+
+		var min_x = dataArray[0].epoch;
+
+		var max_x = dataArray[239].epoch;
+
+		var min_y = dataArray[0].temp[currentUnit]; lazy(dataArray).forEach(function(y){if (y.temp[currentUnit] < min_y) { min_y = y.temp[currentUnit]; } });
+
+		var max_y = 0; lazy(dataArray).forEach(function(y){if (y.temp[currentUnit] > max_y) {max_y = y.temp[currentUnit];} });
+
+		var xLinearScale = d3.scale.linear().domain([min_x,max_x]).range([0,width]);
+
+		var yLinearScale = d3.scale.linear().domain([max_y,min_y]).range([0,height-40]);
+
+		var tempAccessor = d3.svg.line().x(function(d){return xLinearScale(d.epoch);}).y(function(d){return  yLinearScale(d.temp[currentUnit]);}).interpolate("linear");
+
+		var tempGraph = stempContainer.append("g")
+		.append("path")
+		.attr("class","focus")
+		.attr("d",tempAccessor(dataArray))
+		.attr("stroke","#1c3b54")
+		.attr("stroke-width","3")
+		.attr("fill","none")
+		.attr("transform","translate(25,40)");
+
+		var points = stempContainer.append("g").selectAll("circle")
+		.data(dataArray)
+		.enter().append("circle")
+		.attr("cx",function(d,i){ return xLinearScale(d.epoch); })
+		.attr("cy",function(d,i){ return yLinearScale(d.temp[currentUnit]); })
+		.attr("r",function(d){return 6;})
+		.attr("fill","black")
+		.attr("transform","translate(25,40)")
+		.on("mouseover", function(o,p) {
+			var title = document.querySelector('.title');
+			title.style.visibility = "visible";
+			title.innerHTML = (d3.select(this)[0][0].__data__.temp[currentUnit] + "<br/>" + d3.select(this)[0][0].__data__.time );
+			title.style.position = "absolute";
+			title.style.left = d3.event.x + 20 + "px";
+			title.style.top = d3.event.y + 30 * -1 + "px";
+			title.style.zIndex = "100";
+			title.style.backgroundColor = "white";
+			title.style.borderRadius = "5px";
+			title.style.padding = "5px";
+			d3.select(this).attr('fill','rgba(31,110,200,0.5)').attr("cursor","pointer");
+		})
+		.on("mouseout", function(o,p) {
+			d3.select(this)
+			.attr("fill","black");
+			var title = document.querySelector('.title');
+			title.style.visibility = "hidden";
+		});
+
+		var xAxis = d3.svg.axis().scale(xLinearScale).orient("bottom").ticks(5).tickFormat(function(d) {return moment.unix(d).format('DD MMMM YY');} );
+
+		var yAxis = d3.svg.axis().scale(yLinearScale).orient("left").ticks(10);
+
+		stempContainer.append("g").attr('class','x-axis').attr('transform','translate(25,'+ height +')').call(xAxis);
+
+		stempContainer.append("g").attr('class','y-axis').attr('transform','translate(25,40)').call(yAxis);
+
+		var xLinearScale2 = d3.scale.linear().domain([min_x,max_x]).range([0,width2]);
+
+		var yLinearScale2 = d3.scale.linear().domain([max_y,min_y]).range([0,height2]);
+
+		var brush = d3.svg.brush().x(xLinearScale2).on("brush",brushmove);
+
+
+		var rangeAccessor = d3.svg.area().x(function(d){return xLinearScale2(d.epoch);}).y0(height2).y1(function(d){return  yLinearScale2(d.temp[currentUnit]);}).interpolate("basis");	
+
+		var rangeGraph = srangeContainer.append("g")
+		.append("path")
+		.attr("d",rangeAccessor(dataArray))
+		.attr("fill","rgba(255,255,255,0.7)");
+
+		srangeContainer.append("g")
+		.attr("class", "xbrush")
+		.call(brush)
+		.selectAll("rect")
+		.attr("y", 0)
+		.attr("fill","rgba(31,110,200,0.5)")
+		.attr("height", height2);
+
+		function brushmove(){
+			xLinearScale.domain(brush.empty() ? xLinearScale2.domain() : brush.extent() );
+			stempContainer.select(".x-axis").call(xAxis);
+			stempContainer.select(".focus")
+			.attr("d",tempAccessor(dataArray)).attr("stroke","#1c3b54").attr("stroke-width","3")
+			.attr("fill","none")
+			.attr("transform","translate(25,40)");
+			stempContainer.selectAll("circle")
+			.attr("cx",function(d,i){ return xLinearScale(d.epoch); })
+			.attr("cy",function(d,i){ return yLinearScale(d.temp[currentUnit]); });
+		}
+
+	};
 </script>
-<script>
-var request = window.superagent;
-request.get('http://api.wunderground.com/api/11822ef41db79306/conditions/q/CA/San_Francisco.json', function(res){
-console.log(res);
-});
-</script>
- {/charts}
+{/charts}

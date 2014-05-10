@@ -8,5 +8,14 @@ exports.pages = function(req, res){
 			keywords      :'d3 charts',
 		});
 	}
+	else if (page_name == 'save') {
+		res.render('save',
+		{
+			title         :'D3 Charts' ,
+			description   :'JSON 2 File',
+			keywords      :'weather api to feed',
+		});
+	}
+
 };
 

@@ -1,0 +1,43 @@
+{>base/}
+
+{<metadata}
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="description" content="{description}">
+<meta name="keywords" content="{keywords}">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+{/metadata}
+
+{<title}
+D3 Charts | {title}
+{/title}
+
+{<links}
+<link rel="stylesheet" href="../css/initial.css" media="screen,mobile"/>
+<link rel="stylesheet" href="../css/custom.css" media="screen,mobile"/>
+{/links}
+
+{<libscripts}
+<script src="../js/superagent.js"></script>
+<script src="../js/bundle.js"></script>
+{/libscripts}
+
+{<body}
+Trying to Save feed...
+{/body}
+
+{<scripts}
+<script>
+var request = window.superagent;
+var jsonp = require('jsonp');
+jsonp('http://api.wunderground.com/api/11822ef41db79306/hourly10day/q/CA/San_Francisco.json', function(err,data){
+request
+.post('/pages/save')
+.set('Content-Type', 'application/json')
+.send(data)
+.end(function(err,res){
+    console.log(res);
+});
+});
+</script>
+{/scripts}

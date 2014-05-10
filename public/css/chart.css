@@ -1,0 +1,58 @@
+.x-axis path,
+.x-axis line {
+    fill: none;
+    stroke: #1c3b54;
+    shape-rendering: crispEdges;
+}
+
+.x-axis text {
+    font-family: sans-serif;
+    font-size: 11px;
+}
+.y-axis path,
+.y-axis line {
+    fill: none;
+    stroke: #1c3b54;
+    shape-rendering: crispEdges;
+}
+
+.y-axis text {
+    font-family: sans-serif;
+    font-size: 11px;
+}
+
+title{
+
+padding:20px;
+border-radius: 12px;
+background-color:white;
+}
+
+input[type=radio]{
+	display:none;
+}
+label{
+	border-radius:3px;
+	background:#1c3b54;
+	color:white;
+	padding:10px;
+	display:block;
+}
+
+div.option-temp{
+	position:absolute;
+	right:30%;
+	top:50px;
+	padding:10px;
+	background-color:rgba(255, 255, 255, 0.7);
+	border-radius: 5px;	
+	display:inline-block;
+}
+input + label{
+	background:transparent;
+	color:#1c3b54;
+}
+input:checked + label{
+		background:#1c3b54;
+		color:rgba(255, 255, 255, 0.701961);
+}
